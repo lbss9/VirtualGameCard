@@ -15,6 +15,8 @@ public sealed record ChangePasswordCommand(string CurrentPassword, string NewPas
 
 public sealed record SendEmailVerificationCommand;
 
+public sealed record SimulateEmailVerificationCommand;
+
 public sealed record VerifyEmailCommand(string Token);
 
 public sealed class VerifyEmailCommandValidator : AbstractValidator<VerifyEmailCommand>
@@ -152,6 +154,35 @@ public sealed class SendEmailVerificationCommandHandler(
             }
         );
         return Result<string>.Success(raw);
+    }
+}
+
+public sealed class SimulateEmailVerificationCommandHandler(
+    ICurrentUser current,
+    IUserRepository users
+)
+{
+    public async Task<Result<ProfileDto>> HandleAsync()
+    {
+        if (current.Id is not Guid id)
+            return Result<ProfileDto>.Failure(Error.Unauthorized("Autenticação necessária."));
+
+        var user = await users.GetByIdAsync(id);
+        if (user is null)
+            return Result<ProfileDto>.Failure(
+                Error.NotFound("Usuário não encontrado.", "USER_NOT_FOUND")
+            );
+
+        if (!user.IsAccountVerified)
+        {
+            user.IsAccountVerified = true;
+            user.AccountVerifiedAt = DateTime.UtcNow;
+            await users.UpdateAsync(user);
+        }
+
+        return Result<ProfileDto>.Success(
+            new ProfileDto(user.Id, user.Email, user.IsAccountVerified, user.CreatedAt)
+        );
     }
 }
 

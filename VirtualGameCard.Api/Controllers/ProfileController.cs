@@ -11,7 +11,9 @@ public sealed class ProfileController(
     GetProfileQueryHandler getProfile,
     ChangePasswordCommandHandler changePassword,
     SendEmailVerificationCommandHandler sendVerification,
-    IWebHostEnvironment environment
+    SimulateEmailVerificationCommandHandler simulateVerification,
+    IWebHostEnvironment environment,
+    IConfiguration configuration
 ) : ControllerBase
 {
     [HttpGet]
@@ -77,5 +79,36 @@ public sealed class ProfileController(
                 "EMAIL_VERIFICATION_SENT"
             )
         );
+    }
+
+    [EnableRateLimiting("sensitive"), HttpPost("email-verification/simulate-confirm")]
+    [ProducesResponseType(typeof(ApiResponse<ProfileDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SimulateVerification()
+    {
+        var enabled =
+            environment.IsDevelopment()
+            || configuration.GetValue<bool>("Features:AllowEmailVerificationSimulation");
+
+        if (!enabled)
+            return ApiResponse
+                .Failure(
+                    "Simulação de confirmação indisponível neste ambiente.",
+                    "EMAIL_VERIFICATION_SIMULATION_DISABLED",
+                    StatusCodes.Status403Forbidden,
+                    Request.Path
+                )
+                .AsResult(StatusCodes.Status403Forbidden);
+
+        var result = await simulateVerification.HandleAsync();
+        return result.IsSuccess
+            ? Ok(
+                ApiResponse.Success(
+                    HttpContext,
+                    result.Value,
+                    "E-mail confirmado por simulação.",
+                    "EMAIL_VERIFICATION_SIMULATED"
+                )
+            )
+            : result.Error!.ToActionResult(HttpContext);
     }
 }

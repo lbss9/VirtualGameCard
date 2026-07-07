@@ -39,6 +39,7 @@ builder.Services.AddScoped<LogoutCommandHandler>();
 builder.Services.AddScoped<GetProfileQueryHandler>();
 builder.Services.AddScoped<ChangePasswordCommandHandler>();
 builder.Services.AddScoped<SendEmailVerificationCommandHandler>();
+builder.Services.AddScoped<SimulateEmailVerificationCommandHandler>();
 builder.Services.AddScoped<VerifyEmailCommandHandler>();
 builder.Services.AddScoped<CreateSupportTicketCommandHandler>();
 builder.Services.AddScoped<GetNotificationsQueryHandler>();
