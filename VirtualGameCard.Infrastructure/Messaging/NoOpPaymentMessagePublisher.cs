@@ -13,7 +13,7 @@ public sealed class NoOpPaymentMessagePublisher(ILogger<NoOpPaymentMessagePublis
     )
     {
         logger.LogInformation(
-            "RabbitMQ desativado. Mensagem de pagamento não publicada. PurchaseId: {PurchaseId}, IdempotencyKey: {IdempotencyKey}",
+            "SQS desativado. Mensagem de pagamento não publicada. PurchaseId: {PurchaseId}, IdempotencyKey: {IdempotencyKey}",
             message.PurchaseId,
             message.IdempotencyKey
         );

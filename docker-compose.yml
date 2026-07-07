@@ -12,14 +12,10 @@ services:
       Metrics__Enabled: "true"
       Features__AllowEmailVerificationSimulation: "true"
       Features__AllowPaymentSimulation: "true"
-      RabbitMq__Enabled: "true"
-      RabbitMq__HostName: host.docker.internal
-      RabbitMq__Port: 5672
-      RabbitMq__UserName: guest
-      RabbitMq__Password: guest
-      RabbitMq__Exchange: virtualgamecard.payments
-      RabbitMq__PaymentRequestedQueue: payments.requested
-      RabbitMq__PaymentRequestedRoutingKey: payment.requested
+      Sqs__Enabled: "false"
+      Sqs__Region: us-east-2
+      Sqs__PaymentRequestedQueueUrl: https://sqs.us-east-2.amazonaws.com/212263949491/vgc-payment-requested
+      Sqs__PaymentApprovedQueueUrl: https://sqs.us-east-2.amazonaws.com/212263949491/vgc-payment-approved
       Cors__AllowedOrigins__0: http://localhost:5173
       Cors__AllowedOrigins__1: http://localhost:5174
       Cors__AllowedOrigins__2: http://127.0.0.1:5173

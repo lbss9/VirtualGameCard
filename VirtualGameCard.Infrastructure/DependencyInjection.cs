@@ -36,15 +36,16 @@ public static class DependencyInjection
         services.AddScoped<IPaymentWebhookEventRepository, PaymentWebhookEventRepository>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IPaymentWebhookVerifier, PaymentWebhookVerifier>();
-        services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
+        services.Configure<SqsOptions>(configuration.GetSection("Sqs"));
         services.AddScoped<IPaymentMessagePublisher>(
             provider =>
-                configuration.GetValue<bool>("RabbitMq:Enabled")
-                    ? provider.GetRequiredService<RabbitMqPaymentMessagePublisher>()
+                configuration.GetValue<bool>("Sqs:Enabled")
+                    ? provider.GetRequiredService<SqsPaymentMessagePublisher>()
                     : provider.GetRequiredService<NoOpPaymentMessagePublisher>()
         );
-        services.AddScoped<RabbitMqPaymentMessagePublisher>();
+        services.AddScoped<SqsPaymentMessagePublisher>();
         services.AddScoped<NoOpPaymentMessagePublisher>();
+        services.AddHostedService<SqsPaymentApprovedConsumer>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
         return services;

@@ -18,16 +18,18 @@ services:
         sync: false
       - key: PaymentWebhook__Secret
         sync: false
-      - key: RabbitMq__Enabled
+      - key: Sqs__Enabled
         value: false
-      - key: RabbitMq__Uri
+      - key: Sqs__Region
+        value: us-east-2
+      - key: Sqs__PaymentRequestedQueueUrl
+        value: https://sqs.us-east-2.amazonaws.com/212263949491/vgc-payment-requested
+      - key: Sqs__PaymentApprovedQueueUrl
+        value: https://sqs.us-east-2.amazonaws.com/212263949491/vgc-payment-approved
+      - key: AWS_ACCESS_KEY_ID
         sync: false
-      - key: RabbitMq__Exchange
-        value: virtualgamecard.payments
-      - key: RabbitMq__PaymentRequestedQueue
-        value: payments.requested
-      - key: RabbitMq__PaymentRequestedRoutingKey
-        value: payment.requested
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
       - key: ConnectionStrings__Default
         sync: false
       - key: Cors__AllowedOrigins__0

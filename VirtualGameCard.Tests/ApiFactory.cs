@@ -21,6 +21,7 @@ public class ApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("RateLimiting:SupportPermitLimit", "1000");
         builder.UseSetting("RateLimiting:WebhookPermitLimit", "1000");
         builder.UseSetting("PaymentWebhook:Secret", "integration-test-webhook-secret");
+        builder.UseSetting("Sqs:Enabled", "false");
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<AppDbContext>();
