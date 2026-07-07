@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using VirtualGameCard.Application.Interfaces;
 using VirtualGameCard.Domain.Interfaces;
 using VirtualGameCard.Infrastructure.Data;
+using VirtualGameCard.Infrastructure.Messaging;
 using VirtualGameCard.Infrastructure.Repositories;
 using VirtualGameCard.Infrastructure.Services;
 
@@ -35,6 +36,15 @@ public static class DependencyInjection
         services.AddScoped<IPaymentWebhookEventRepository, PaymentWebhookEventRepository>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IPaymentWebhookVerifier, PaymentWebhookVerifier>();
+        services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
+        services.AddScoped<IPaymentMessagePublisher>(
+            provider =>
+                configuration.GetValue<bool>("RabbitMq:Enabled")
+                    ? provider.GetRequiredService<RabbitMqPaymentMessagePublisher>()
+                    : provider.GetRequiredService<NoOpPaymentMessagePublisher>()
+        );
+        services.AddScoped<RabbitMqPaymentMessagePublisher>();
+        services.AddScoped<NoOpPaymentMessagePublisher>();
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
         return services;

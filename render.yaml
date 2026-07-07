@@ -18,6 +18,16 @@ services:
         sync: false
       - key: PaymentWebhook__Secret
         sync: false
+      - key: RabbitMq__Enabled
+        value: false
+      - key: RabbitMq__Uri
+        sync: false
+      - key: RabbitMq__Exchange
+        value: virtualgamecard.payments
+      - key: RabbitMq__PaymentRequestedQueue
+        value: payments.requested
+      - key: RabbitMq__PaymentRequestedRoutingKey
+        value: payment.requested
       - key: ConnectionStrings__Default
         sync: false
       - key: Cors__AllowedOrigins__0

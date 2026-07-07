@@ -45,7 +45,8 @@ public sealed class PurchasesController(
                 method,
                 platform,
                 idempotencyKey ?? string.Empty
-            )
+            ),
+            HttpContext.RequestAborted
         );
         AppMetrics.PurchaseEvents
             .WithLabels(

@@ -2,6 +2,7 @@ using FluentValidation;
 using VirtualGameCard.Application.Common;
 using VirtualGameCard.Application.Interfaces;
 using VirtualGameCard.Application.Purchases.DTOs;
+using VirtualGameCard.Application.Purchases.Messages;
 using VirtualGameCard.Domain.Entities;
 using VirtualGameCard.Domain.Interfaces;
 
@@ -43,12 +44,16 @@ public sealed class PurchaseCardCommandValidator : AbstractValidator<PurchaseCar
 public class PurchaseCardCommandHandler(
     IGiftCardPurchaseRepository purchaseRepository,
     IUserRepository userRepository,
-    ICurrentUser currentUser
+    ICurrentUser currentUser,
+    IPaymentMessagePublisher paymentMessagePublisher
 )
 {
     private static readonly PurchaseCardCommandValidator Validator = new();
 
-    public async Task<Result<PurchaseDetail>> HandleAsync(PurchaseCardCommand command)
+    public async Task<Result<PurchaseDetail>> HandleAsync(
+        PurchaseCardCommand command,
+        CancellationToken cancellationToken = default
+    )
     {
         if (!currentUser.IsAuthenticated || currentUser.Id is null)
         {
@@ -131,8 +136,36 @@ public class PurchaseCardCommandHandler(
                     "IDEMPOTENCY_KEY_REUSED"
                 )
             );
+
+        if (persisted.Created)
+        {
+            await paymentMessagePublisher.PublishPaymentRequestedAsync(
+                new PaymentRequestedMessage(
+                    persisted.Purchase.Id,
+                    persisted.Purchase.UserId,
+                    persisted.Purchase.AmountInCents,
+                    PlatformName(persisted.Purchase.Platform),
+                    MethodName(persisted.Purchase.PaymentMethod),
+                    persisted.Purchase.IdempotencyKey,
+                    DateTime.UtcNow
+                ),
+                cancellationToken
+            );
+        }
+
         return Result<PurchaseDetail>.Success(ToDetail(persisted.Purchase));
     }
+
+    private static string MethodName(PaymentMethod method) =>
+        method == PaymentMethod.Pix ? "pix" : "card";
+
+    private static string PlatformName(GiftCardPlatform platform) =>
+        platform switch
+        {
+            GiftCardPlatform.Playstation => "playstation",
+            GiftCardPlatform.GooglePlay => "google-play",
+            _ => platform.ToString().ToLowerInvariant(),
+        };
 
     private static PurchaseDetail ToDetail(GiftCardPurchase purchase) =>
         new(
