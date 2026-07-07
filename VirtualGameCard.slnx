@@ -1,9 +1,7 @@
 <Solution>
   <Project Path="VirtualGameCard.Api/VirtualGameCard.Api.csproj" />
   <Project Path="VirtualGameCard.Application/VirtualGameCard.Application.csproj" />
-  <Project Path="VirtualGameCard.Contracts/VirtualGameCard.Contracts.csproj" />
   <Project Path="VirtualGameCard.Domain/VirtualGameCard.Domain.csproj" />
   <Project Path="VirtualGameCard.Infrastructure/VirtualGameCard.Infrastructure.csproj" />
-  <Project Path="VirtualGameCard.PaymentWorker/VirtualGameCard.PaymentWorker.csproj" />
   <Project Path="VirtualGameCard.Tests/VirtualGameCard.Tests.csproj" />
 </Solution>
