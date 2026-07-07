@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: virtualgamecard-api
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /healthz
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Jwt__Issuer
+        value: virtualgamecard-api
+      - key: Jwt__Audience
+        value: virtualgamecard-web
+      - key: Jwt__AccessTokenMinutes
+        value: 15
+      - key: Jwt__Secret
+        sync: false
+      - key: PaymentWebhook__Secret
+        sync: false
+      - key: ConnectionStrings__Default
+        sync: false
+      - key: Cors__AllowedOrigins__0
+        value: https://lbss9.github.io
