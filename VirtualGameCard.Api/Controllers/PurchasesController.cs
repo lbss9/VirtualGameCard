@@ -14,7 +14,10 @@ public sealed class PurchasesController(
     PurchaseCardCommandHandler purchase,
     GetPurchasesQueryHandler list,
     GetPurchaseByIdQueryHandler detail,
-    ICurrentUser current
+    SimulatePurchaseApprovalCommandHandler simulateApproval,
+    ICurrentUser current,
+    IWebHostEnvironment environment,
+    IConfiguration configuration
 ) : ControllerBase
 {
     public sealed record PurchaseRequest(int Amount, string Platform, string PaymentMethod);
@@ -109,6 +112,46 @@ public sealed class PurchasesController(
                 "PURCHASE_RETRIEVED"
             )
         );
+    }
+
+    [EnableRateLimiting("sensitive"), HttpPost("api/purchases/{id:guid}/simulate-approval")]
+    [ProducesResponseType(typeof(ApiResponse<PurchaseData>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SimulateApproval(Guid id, CancellationToken cancellationToken)
+    {
+        var enabled =
+            environment.IsDevelopment()
+            || configuration.GetValue<bool>("Features:AllowPaymentSimulation");
+
+        if (!enabled)
+            return ApiResponse
+                .Failure(
+                    "Simulação de pagamento indisponível neste ambiente.",
+                    "PAYMENT_SIMULATION_DISABLED",
+                    StatusCodes.Status403Forbidden,
+                    Request.Path
+                )
+                .AsResult(StatusCodes.Status403Forbidden);
+
+        if (current.Id is not Guid userId)
+            return ApiResponse
+                .Failure("Autenticação necessária.", "UNAUTHORIZED", 401, Request.Path)
+                .AsResult(401);
+
+        var result = await simulateApproval.HandleAsync(
+            new SimulatePurchaseApprovalCommand(userId, id),
+            cancellationToken
+        );
+
+        return result.IsSuccess
+            ? Ok(
+                ApiResponse.Success(
+                    HttpContext,
+                    ToDetail(result.Value!),
+                    "Pagamento confirmado por simulação.",
+                    "PAYMENT_SIMULATED"
+                )
+            )
+            : result.Error!.ToActionResult(HttpContext);
     }
 
     private static PurchaseData ToDetail(

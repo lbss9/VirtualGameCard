@@ -49,6 +49,7 @@ builder.Services.AddScoped<PurchaseCardCommandHandler>();
 builder.Services.AddScoped<GetPurchasesQueryHandler>();
 builder.Services.AddScoped<GetPurchaseByIdQueryHandler>();
 builder.Services.AddScoped<ProcessPaymentWebhookCommandHandler>();
+builder.Services.AddScoped<SimulatePurchaseApprovalCommandHandler>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();

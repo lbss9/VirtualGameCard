@@ -39,6 +39,7 @@ public sealed class ApiRoutesTests(ApiFactory factory) : IClassFixture<ApiFactor
             "/api/cards/purchase",
             "/api/purchases",
             "/api/purchases/{id}",
+            "/api/purchases/{id}/simulate-approval",
             "/api/support/tickets",
             "/api/notifications",
             "/api/notifications/{id}/read",
@@ -390,6 +391,52 @@ public sealed class ApiRoutesTests(ApiFactory factory) : IClassFixture<ApiFactor
                 detailBody.GetProperty("data").GetProperty("code").GetString()
             )
         );
+    }
+
+    [Fact]
+    public async Task Payment_simulation_approves_pending_purchase_for_owner()
+    {
+        var session = await RegisterAndVerify();
+        Authenticate(session.Token);
+        client.DefaultRequestHeaders.Add("Idempotency-Key", Guid.NewGuid().ToString("N"));
+
+        var purchase = await client.PostAsJsonAsync(
+            "/api/cards/purchase",
+            new
+            {
+                Amount = 50,
+                Platform = "steam",
+                PaymentMethod = "pix",
+            }
+        );
+        Assert.Equal(HttpStatusCode.Created, purchase.StatusCode);
+        var created = await Body(purchase);
+        var purchaseId = created.GetProperty("data").GetProperty("id").GetGuid();
+        Assert.Equal("pending", created.GetProperty("data").GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Null, created.GetProperty("data").GetProperty("code").ValueKind);
+
+        var approved = await client.PostAsJsonAsync(
+            $"/api/purchases/{purchaseId}/simulate-approval",
+            new { }
+        );
+        Assert.Equal(HttpStatusCode.OK, approved.StatusCode);
+        var approvedBody = await Body(approved);
+        AssertEnvelope(approvedBody, "PAYMENT_SIMULATED", 200);
+        Assert.Equal("approved", approvedBody.GetProperty("data").GetProperty("status").GetString());
+        Assert.False(
+            string.IsNullOrWhiteSpace(
+                approvedBody.GetProperty("data").GetProperty("code").GetString()
+            )
+        );
+
+        var other = await RegisterAndVerify();
+        Authenticate(other.Token);
+        var hidden = await client.PostAsJsonAsync(
+            $"/api/purchases/{purchaseId}/simulate-approval",
+            new { }
+        );
+        Assert.Equal(HttpStatusCode.NotFound, hidden.StatusCode);
+        AssertEnvelope(await Body(hidden), "PURCHASE_NOT_FOUND", 404);
     }
 
     [Fact]
