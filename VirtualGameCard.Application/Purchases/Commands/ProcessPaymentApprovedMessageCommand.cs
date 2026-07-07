@@ -30,7 +30,10 @@ public sealed class ProcessPaymentApprovedMessageCommandHandler(
             || string.IsNullOrWhiteSpace(command.IdempotencyKey)
         )
             return Result<bool>.Failure(
-                Error.Validation("Mensagem de pagamento aprovada inválida.", "PAYMENT_APPROVED_INVALID")
+                Error.Validation(
+                    "Mensagem de pagamento aprovada inválida.",
+                    "PAYMENT_APPROVED_INVALID"
+                )
             );
 
         var purchase = await purchases.GetByIdAsync(command.PurchaseId);
@@ -66,7 +69,8 @@ public sealed class ProcessPaymentApprovedMessageCommandHandler(
                     {
                         UserId = purchase.UserId,
                         Title = "Seu card está pronto!",
-                        Message = $"Seu {purchase.Platform} Card está disponível em Minhas Compras.",
+                        Message =
+                            $"Seu {purchase.Platform} Card está disponível em Minhas Compras.",
                         Kind = NotificationKind.Purchase,
                     }
                 );

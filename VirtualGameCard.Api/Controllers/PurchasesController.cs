@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using VirtualGameCard.Api.Common;
+using VirtualGameCard.Api.Observability;
 using VirtualGameCard.Application.Interfaces;
 using VirtualGameCard.Application.Purchases.Commands;
 using VirtualGameCard.Application.Purchases.Queries;
-using VirtualGameCard.Api.Observability;
 using VirtualGameCard.Domain.Entities;
 
 namespace VirtualGameCard.Api.Controllers;
@@ -48,8 +48,8 @@ public sealed class PurchasesController(
             ),
             HttpContext.RequestAborted
         );
-        AppMetrics.PurchaseEvents
-            .WithLabels(
+        AppMetrics
+            .PurchaseEvents.WithLabels(
                 request.Platform.ToLowerInvariant(),
                 request.PaymentMethod.ToLowerInvariant(),
                 result.IsSuccess ? result.Value!.StatusName : "rejected",
@@ -151,8 +151,8 @@ public sealed class PurchasesController(
             new SimulatePurchaseApprovalCommand(userId, id),
             cancellationToken
         );
-        AppMetrics.PurchaseEvents
-            .WithLabels(
+        AppMetrics
+            .PurchaseEvents.WithLabels(
                 result.IsSuccess ? PlatformName(result.Value!.Platform) : "unknown",
                 result.IsSuccess ? MethodName(result.Value!.PaymentMethod) : "unknown",
                 result.IsSuccess ? result.Value!.StatusName : "rejected",

@@ -23,8 +23,11 @@ public sealed class SupportController(CreateSupportTicketCommandHandler handler)
             new CreateSupportTicketCommand(request.Subject, request.Category, request.Message),
             cancellationToken
         );
-        AppMetrics.SupportTickets
-            .WithLabels(request.Category.ToLowerInvariant(), result.IsSuccess ? "success" : "failure")
+        AppMetrics
+            .SupportTickets.WithLabels(
+                request.Category.ToLowerInvariant(),
+                result.IsSuccess ? "success" : "failure"
+            )
             .Inc();
         if (!result.IsSuccess)
             return result.Error!.ToActionResult(HttpContext);

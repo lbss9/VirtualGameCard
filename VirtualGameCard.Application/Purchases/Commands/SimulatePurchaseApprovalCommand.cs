@@ -48,7 +48,10 @@ public sealed class SimulatePurchaseApprovalCommandHandler(
 
                 if (!approved)
                 {
-                    var current = await purchases.GetByIdForUserAsync(command.PurchaseId, command.UserId);
+                    var current = await purchases.GetByIdForUserAsync(
+                        command.PurchaseId,
+                        command.UserId
+                    );
                     return current is null
                         ? Result<PurchaseDetail>.Failure(
                             Error.NotFound("Compra não encontrada.", "PURCHASE_NOT_FOUND")
@@ -61,7 +64,8 @@ public sealed class SimulatePurchaseApprovalCommandHandler(
                     {
                         UserId = command.UserId,
                         Title = "Pagamento confirmado",
-                        Message = $"Seu {purchase.Platform} Card está disponível em Minhas Compras.",
+                        Message =
+                            $"Seu {purchase.Platform} Card está disponível em Minhas Compras.",
                         Kind = NotificationKind.Purchase,
                     }
                 );

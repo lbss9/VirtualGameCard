@@ -432,7 +432,10 @@ public sealed class ApiRoutesTests(ApiFactory factory) : IClassFixture<ApiFactor
         Assert.Equal(HttpStatusCode.OK, approved.StatusCode);
         var approvedBody = await Body(approved);
         AssertEnvelope(approvedBody, "PAYMENT_SIMULATED", 200);
-        Assert.Equal("approved", approvedBody.GetProperty("data").GetProperty("status").GetString());
+        Assert.Equal(
+            "approved",
+            approvedBody.GetProperty("data").GetProperty("status").GetString()
+        );
         Assert.False(
             string.IsNullOrWhiteSpace(
                 approvedBody.GetProperty("data").GetProperty("code").GetString()

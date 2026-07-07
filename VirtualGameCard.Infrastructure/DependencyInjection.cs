@@ -37,11 +37,10 @@ public static class DependencyInjection
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IPaymentWebhookVerifier, PaymentWebhookVerifier>();
         services.Configure<SqsOptions>(configuration.GetSection("Sqs"));
-        services.AddScoped<IPaymentMessagePublisher>(
-            provider =>
-                configuration.GetValue<bool>("Sqs:Enabled")
-                    ? provider.GetRequiredService<SqsPaymentMessagePublisher>()
-                    : provider.GetRequiredService<NoOpPaymentMessagePublisher>()
+        services.AddScoped<IPaymentMessagePublisher>(provider =>
+            configuration.GetValue<bool>("Sqs:Enabled")
+                ? provider.GetRequiredService<SqsPaymentMessagePublisher>()
+                : provider.GetRequiredService<NoOpPaymentMessagePublisher>()
         );
         services.AddScoped<SqsPaymentMessagePublisher>();
         services.AddScoped<NoOpPaymentMessagePublisher>();

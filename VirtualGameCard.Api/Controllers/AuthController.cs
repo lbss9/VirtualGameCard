@@ -34,7 +34,9 @@ public class AuthController(
         var result = await registerHandler.HandleAsync(
             new RegisterCommand(request.Email, request.Password)
         );
-        AppMetrics.AuthEvents.WithLabels("register", result.IsSuccess ? "success" : "failure").Inc();
+        AppMetrics
+            .AuthEvents.WithLabels("register", result.IsSuccess ? "success" : "failure")
+            .Inc();
 
         if (!result.IsSuccess)
             return result.Error!.ToActionResult(HttpContext);

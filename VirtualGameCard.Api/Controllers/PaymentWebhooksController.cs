@@ -33,8 +33,11 @@ public sealed class PaymentWebhooksController(ProcessPaymentWebhookCommandHandle
             ),
             cancellationToken
         );
-        AppMetrics.PaymentWebhookEvents
-            .WithLabels(request.Status.ToLowerInvariant(), result.IsSuccess ? "success" : "failure")
+        AppMetrics
+            .PaymentWebhookEvents.WithLabels(
+                request.Status.ToLowerInvariant(),
+                result.IsSuccess ? "success" : "failure"
+            )
             .Inc();
         if (!result.IsSuccess)
             return result.Error!.ToActionResult(HttpContext);
