@@ -203,6 +203,61 @@ OpenAPI:
 http://localhost:8090/openapi/v1.json
 ```
 
+## 📊 Observabilidade: Prometheus + Grafana
+
+O projeto já possui observabilidade local completa:
+
+- métricas HTTP automáticas da API;
+- endpoint Prometheus em `/metrics`;
+- métricas de negócio para autenticação, compras, webhooks e suporte;
+- Prometheus provisionado;
+- Grafana provisionado com datasource e dashboard.
+
+Suba a stack completa:
+
+```powershell
+docker compose up -d --build
+```
+
+Serviços:
+
+| Serviço | URL |
+|---|---|
+| API | `http://localhost:8080` |
+| Health check | `http://localhost:8080/healthz` |
+| Métricas | `http://localhost:8080/metrics` |
+| Prometheus | `http://localhost:9090` |
+| Grafana | `http://localhost:3000` |
+
+Login local do Grafana:
+
+```text
+usuário: admin
+senha: admin
+```
+
+Dashboard provisionado:
+
+```text
+VirtualGameCard / VirtualGameCard · Observability
+```
+
+Principais métricas customizadas:
+
+| Métrica | Descrição |
+|---|---|
+| `vgc_auth_events_total` | Login/cadastro por resultado |
+| `vgc_purchase_events_total` | Eventos de compra por plataforma, método, status e origem |
+| `vgc_payment_webhook_events_total` | Webhooks de pagamento por status e resultado |
+| `vgc_support_tickets_total` | Chamados por categoria e resultado |
+| `vgc_app_info` | Identificação da aplicação/ambiente |
+
+Por segurança, `Metrics:Enabled` é `false` por padrão em produção. No Docker Compose local ele é ativado com:
+
+```env
+Metrics__Enabled=true
+```
+
 ## 🔑 Variáveis de ambiente
 
 Em produção, configure:
@@ -215,6 +270,7 @@ Em produção, configure:
 | `Jwt__Audience` | Audiência do token |
 | `PaymentWebhook__Secret` | Segredo HMAC dos webhooks |
 | `Cors__AllowedOrigins__0` | Origem pública do frontend |
+| `Metrics__Enabled` | Habilita `/metrics`; use com cuidado em produção |
 | `ASPNETCORE_ENVIRONMENT` | `Production` |
 
 Também é aceito `DATABASE_URL` no formato `postgresql://...`, útil em providers como Neon.

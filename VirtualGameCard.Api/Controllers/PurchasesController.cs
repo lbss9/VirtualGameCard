@@ -5,6 +5,7 @@ using VirtualGameCard.Api.Common;
 using VirtualGameCard.Application.Interfaces;
 using VirtualGameCard.Application.Purchases.Commands;
 using VirtualGameCard.Application.Purchases.Queries;
+using VirtualGameCard.Api.Observability;
 using VirtualGameCard.Domain.Entities;
 
 namespace VirtualGameCard.Api.Controllers;
@@ -46,6 +47,14 @@ public sealed class PurchasesController(
                 idempotencyKey ?? string.Empty
             )
         );
+        AppMetrics.PurchaseEvents
+            .WithLabels(
+                request.Platform.ToLowerInvariant(),
+                request.PaymentMethod.ToLowerInvariant(),
+                result.IsSuccess ? result.Value!.StatusName : "rejected",
+                "checkout"
+            )
+            .Inc();
         if (!result.IsSuccess)
             return result.Error!.ToActionResult(HttpContext);
         return StatusCode(
@@ -141,6 +150,14 @@ public sealed class PurchasesController(
             new SimulatePurchaseApprovalCommand(userId, id),
             cancellationToken
         );
+        AppMetrics.PurchaseEvents
+            .WithLabels(
+                result.IsSuccess ? PlatformName(result.Value!.Platform) : "unknown",
+                result.IsSuccess ? MethodName(result.Value!.PaymentMethod) : "unknown",
+                result.IsSuccess ? result.Value!.StatusName : "rejected",
+                "simulation"
+            )
+            .Inc();
 
         return result.IsSuccess
             ? Ok(

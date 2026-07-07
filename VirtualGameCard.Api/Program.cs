@@ -3,8 +3,10 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Prometheus;
 using VirtualGameCard.Api.Auth;
 using VirtualGameCard.Api.Common;
+using VirtualGameCard.Api.Observability;
 using VirtualGameCard.Application.Auth;
 using VirtualGameCard.Application.Auth.Commands;
 using VirtualGameCard.Application.Interfaces;
@@ -208,6 +210,9 @@ builder.Services.AddOpenApi(options =>
 });
 
 var app = builder.Build();
+var metricsEnabled =
+    app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("Metrics:Enabled");
+AppMetrics.SetAppInfo(app.Environment.EnvironmentName);
 
 using (var scope = app.Services.CreateScope())
 {
@@ -226,6 +231,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 app.UseResponseCompression();
+if (metricsEnabled)
+    app.UseHttpMetrics(options =>
+    {
+        options.AddCustomLabel("service", _ => "virtualgamecard-api");
+    });
 
 // Status do framework sem corpo (401/404) → ApiError
 app.UseStatusCodePages(async context =>
@@ -244,6 +254,8 @@ app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
 app.MapGet("/healthz", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
+if (metricsEnabled)
+    app.MapMetrics().AllowAnonymous();
 app.MapControllers();
 
 app.Run();

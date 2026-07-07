@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using VirtualGameCard.Api.Common;
+using VirtualGameCard.Api.Observability;
 using VirtualGameCard.Application.Support;
 
 namespace VirtualGameCard.Api.Controllers;
@@ -22,6 +23,9 @@ public sealed class SupportController(CreateSupportTicketCommandHandler handler)
             new CreateSupportTicketCommand(request.Subject, request.Category, request.Message),
             cancellationToken
         );
+        AppMetrics.SupportTickets
+            .WithLabels(request.Category.ToLowerInvariant(), result.IsSuccess ? "success" : "failure")
+            .Inc();
         if (!result.IsSuccess)
             return result.Error!.ToActionResult(HttpContext);
         return StatusCode(

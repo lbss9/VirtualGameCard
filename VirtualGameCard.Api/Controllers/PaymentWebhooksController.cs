@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using VirtualGameCard.Api.Common;
+using VirtualGameCard.Api.Observability;
 using VirtualGameCard.Application.Purchases.Commands;
 
 namespace VirtualGameCard.Api.Controllers;
@@ -32,6 +33,9 @@ public sealed class PaymentWebhooksController(ProcessPaymentWebhookCommandHandle
             ),
             cancellationToken
         );
+        AppMetrics.PaymentWebhookEvents
+            .WithLabels(request.Status.ToLowerInvariant(), result.IsSuccess ? "success" : "failure")
+            .Inc();
         if (!result.IsSuccess)
             return result.Error!.ToActionResult(HttpContext);
         return Ok(

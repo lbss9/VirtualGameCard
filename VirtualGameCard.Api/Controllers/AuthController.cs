@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using VirtualGameCard.Api.Common;
+using VirtualGameCard.Api.Observability;
 using VirtualGameCard.Application.Auth.Commands;
 using VirtualGameCard.Application.Common;
 using VirtualGameCard.Domain.Interfaces;
@@ -33,6 +34,7 @@ public class AuthController(
         var result = await registerHandler.HandleAsync(
             new RegisterCommand(request.Email, request.Password)
         );
+        AppMetrics.AuthEvents.WithLabels("register", result.IsSuccess ? "success" : "failure").Inc();
 
         if (!result.IsSuccess)
             return result.Error!.ToActionResult(HttpContext);
@@ -60,6 +62,7 @@ public class AuthController(
         var result = await loginHandler.HandleAsync(
             new LoginCommand(request.Email, request.Password)
         );
+        AppMetrics.AuthEvents.WithLabels("login", result.IsSuccess ? "success" : "failure").Inc();
 
         if (!result.IsSuccess)
             return result.Error!.ToActionResult(HttpContext);

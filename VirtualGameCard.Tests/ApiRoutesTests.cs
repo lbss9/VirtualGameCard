@@ -59,6 +59,16 @@ public sealed class ApiRoutesTests(ApiFactory factory) : IClassFixture<ApiFactor
     }
 
     [Fact]
+    public async Task Metrics_endpoint_is_available_in_development()
+    {
+        var response = await client.GetAsync("/metrics");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Contains("vgc_app_info", body, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Register_and_login_return_standard_envelope()
     {
         var account = NewAccount();
