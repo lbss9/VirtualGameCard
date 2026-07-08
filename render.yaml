@@ -26,6 +26,8 @@ services:
         value: https://sqs.us-east-2.amazonaws.com/212263949491/vgc-payment-requested
       - key: Sqs__PaymentApprovedQueueUrl
         value: https://sqs.us-east-2.amazonaws.com/212263949491/vgc-payment-approved
+      - key: Sqs__PaymentProcessingDelaySeconds
+        value: 30
       - key: AWS_ACCESS_KEY_ID
         sync: false
       - key: AWS_SECRET_ACCESS_KEY

@@ -9,4 +9,5 @@ public sealed class SqsOptions
     public int WaitTimeSeconds { get; init; } = 20;
     public int VisibilityTimeoutSeconds { get; init; } = 180;
     public int MaxNumberOfMessages { get; init; } = 5;
+    public int PaymentProcessingDelaySeconds { get; init; } = 30;
 }

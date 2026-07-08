@@ -30,6 +30,7 @@ public sealed class SqsPaymentMessagePublisher(
             {
                 QueueUrl = _options.PaymentRequestedQueueUrl,
                 MessageBody = JsonSerializer.Serialize(message),
+                DelaySeconds = Math.Clamp(_options.PaymentProcessingDelaySeconds, 0, 900),
                 MessageAttributes = new Dictionary<string, MessageAttributeValue>
                 {
                     ["messageType"] = new()
